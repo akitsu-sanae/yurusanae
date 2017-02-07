@@ -82,8 +82,8 @@ struct test_base {
 
 }
 
-#define YURU_TEST(x) \
-    struct x : public yurusanae::test_base{  \
+#define YURU_TEST_DETAIL_1(x) \
+    struct x : public yurusanae::test_base {  \
         explicit x(); \
         std::string name() const override { \
             return #x; \
@@ -91,6 +91,16 @@ struct test_base {
     }; \
     inline x::x()
 
+#define YURU_TEST_DETAIL_2(x, base) \
+    struct x : public base {  \
+        explicit x(); \
+        std::string name() const override { \
+            return #x; \
+        } \
+    }; \
+    inline x::x()
 
+#define YURUSANAE_SELECTER(_1, _2, COUNT, ...) COUNT
+#define YURU_TEST(...) YURUSANAE_SELECTER(__VA_ARGS__, YURU_TEST_DETAIL_2, YURU_TEST_DETAIL_1) (__VA_ARGS__)
 
 #endif

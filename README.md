@@ -44,6 +44,27 @@ int main() {
 }
 ```
 
+Yurusanae is useless? Ok, you can write custom test like this:
+```cpp
+struct custom_test : public yurusanae::test_base {
+    // new command
+    void neko() const {
+        std::cout << "nyan-nyan" << std::endl;
+    }
+};
+
+YURU_TEST(customed_fib_test, custom_test) {
+    neko(); // use customed command
+}
+```
+
+and, calling this test as same as default one:
+```cpp
+int main() {
+    customed_fib_test();
+}
+```
+
 # Copyright
 Copyright (C) 2016 akitsu sanae.  
 Distributed under the Boost Software License, Version 1.0. 
