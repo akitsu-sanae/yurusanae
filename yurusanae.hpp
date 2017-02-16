@@ -13,6 +13,7 @@
 #include <exception>
 #include <iostream>
 #include <sstream>
+#include <chrono>
 
 namespace yurusanae {
 
@@ -42,7 +43,7 @@ struct test_fail : public std::exception {
 };
 
 struct test_base {
-    virtual ~test_base() {}
+    virtual ~test_base() = default;
     virtual std::string name() const = 0;
 
     template<typename T>
@@ -80,6 +81,31 @@ struct test_base {
     }
 };
 
+template<size_t N = 100, typename T = std::chrono::milliseconds>
+struct benchmark_base {
+    virtual std::string name() const = 0;
+    virtual void exec_impl() const = 0;
+    void exec() const {
+        auto buf = std::cout.rdbuf();
+        std::stringstream dummy;
+        std::cout.rdbuf(dummy.rdbuf());
+        std::cerr << "\033[32m" << std::flush;
+        auto start = std::chrono::system_clock::now();
+        for (int i=0; i<N; i++) {
+            std::cerr << "\r\033[K";
+            std::cerr << "[benchmark for " << name() << "] progress: " << 100.0 * (double)i/N << "%" << std::flush;
+            exec_impl();
+        }
+        auto end = std::chrono::system_clock::now();
+        std::cout.rdbuf(buf);
+        auto diff = std::chrono::duration_cast<T>(end - start).count() / N;
+        std::cerr << "\r\033[K";
+        std::cerr << "[benchmark for " << name() <<  ": " << diff << "ms]";
+        std::cerr << "\033[39m" << std::endl;
+    }
+    virtual ~benchmark_base() = default;
+};
+
 }
 
 #define YURU_TEST_DETAIL_1(x) \
@@ -100,7 +126,36 @@ struct test_base {
     }; \
     inline x::x()
 
-#define YURUSANAE_SELECTER(_1, _2, COUNT, ...) COUNT
+#define YURUSANAE_SELECTER(_1, _2, _3, COUNT, ...) COUNT
 #define YURU_TEST(...) YURUSANAE_SELECTER(__VA_ARGS__, YURU_TEST_DETAIL_2, YURU_TEST_DETAIL_1) (__VA_ARGS__)
+
+#define YURU_BENCH_DETAIL_1(x) \
+    struct x : public yurusanae::benchmark_base<> { \
+        std::string name() const override { \
+            return #x; \
+        } \
+        void exec_impl() const override; \
+    }; \
+    void x::exec_impl() const
+
+#define YURU_BENCH_DETAIL_2(x, N) \
+    struct x : public yurusanae::benchmark_base<N> { \
+        std::string name() const override { \
+            return #x; \
+        } \
+        void exec_impl() const override; \
+    }; \
+    void x::exec_impl() const
+
+#define YURU_BENCH_DETAIL_3(x, N, T) \
+    struct x : public yurusanae::benchmark_base<N, T> { \
+        std::string name() const override { \
+            return #x; \
+        } \
+        void exec_impl() const override; \
+    }; \
+    void x::exec_impl() const
+
+#define YURU_BENCH(...) YURUSANAE_SELECTER(__VA_ARGS__, YUTU_BENCH_DETAIL_3, YURU_BENCH_DETAIL_2, YURU_BENCH_DETAIL_1) (__VA_ARGS__)
 
 #endif

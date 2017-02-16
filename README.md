@@ -1,12 +1,14 @@
 # Yurusanae
 
-Yurusanae is C++ header only testing library.  
+Yurusanae is C++ header only testing/benchmark library.  
 
 # Install
 
 `#include "yurusanae.hpp"`
 
 # Usage
+
+### Unit testing
 
 Think the case of testing Fibonacci sequence.  
 Function fib is defined like this:
@@ -63,6 +65,57 @@ and, calling this test as same as default one:
 int main() {
     customed_fib_test();
 }
+```
+
+### Benchmark
+
+Here are two Fibonacci functions.
+
+```cpp
+int fib1(int n) {
+    if (n <= 2)
+        return n;
+    else
+        return fib1(n-1) + fib1(n-2);
+}
+
+int fib2(int n) {
+    auto n1 = 1;
+    auto n2 = 1;
+    auto result = 1;
+    for (int i=0; i<n; i++) {
+        result = n1 + n2;
+        n2 = n1;
+        n1 = result;
+    }
+    return result;
+}
+```
+First `fib1` is simple and slow. The other `fib2` is very very fast.  
+Let's compare these performance!  
+You can write benchmark code with yurusanae like this:
+```cpp
+YURU_BENCH(fib1_bench) {
+    std::cout << fib1(36) << std::endl;
+}
+
+YURU_BENCH(fib2_bench, 100000) {
+    std::cout << fib2(36) << std::endl;
+}
+```
+`fib2_bench`'s second argument is how many times run the code. default is 100.  
+
+And, run the benchmark:
+```cpp
+int main() {
+    fib1_bench{}.exec();
+    fib2_bench{}.exec();
+}
+```
+output:
+```
+[benchmark for fib1_bench: 118ms]
+[benchmark for fib2_bench: 0ms]
 ```
 
 # Copyright
