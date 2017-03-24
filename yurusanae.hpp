@@ -45,9 +45,11 @@ struct test_fail : public std::exception {
 struct test_base {
     virtual ~test_base() = default;
     virtual std::string name() const = 0;
+    int assert_count = 0;
 
     template<typename T>
-    void assert_eq(T const& lhs, T const& rhs) const {
+    void assert_eq(T const& lhs, T const& rhs) {
+        assert_count++;
         if (lhs == rhs)
             return;
         std::stringstream ss;
@@ -56,7 +58,8 @@ struct test_base {
         throw test_fail{ss.str()};
     };
     template<typename T>
-    void assert_lt(T const& lhs, T const& rhs) const {
+    void assert_lt(T const& lhs, T const& rhs) {
+        assert_count++;
         if (lhs < rhs)
             return;
         std::stringstream ss;
@@ -66,7 +69,8 @@ struct test_base {
     }
 
     template<typename F, typename ... Args>
-    void assert_if(F&& f, Args&& ... args) const {
+    void assert_if(F&& f, Args&& ... args) {
+        assert_count++;
         if (f(std::forward<Args>(args) ...))
             return;
         std::stringstream ss;
@@ -114,6 +118,9 @@ struct benchmark_base {
         std::string name() const override { \
             return #x; \
         } \
+        ~x() { \
+            std::cerr << "\033[33m[passed " << name() << ": number of assertions: " << assert_count <<  "]\033[39m" << std::endl; \
+        } \
     }; \
     inline x::x()
 
@@ -122,6 +129,9 @@ struct benchmark_base {
         explicit x(); \
         std::string name() const override { \
             return #x; \
+        } \
+        ~x() { \
+            std::cerr << "\033[33m[passed " << name() << ": number of assertions: " << assert_count <<  "]\033[39m" << std::endl; \
         } \
     }; \
     inline x::x()
