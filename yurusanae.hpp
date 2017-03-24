@@ -126,8 +126,8 @@ struct benchmark_base {
     }; \
     inline x::x()
 
-#define YURUSANAE_SELECTER(_1, _2, _3, COUNT, ...) COUNT
-#define YURU_TEST(...) YURUSANAE_SELECTER(__VA_ARGS__, YURU_TEST_DETAIL_2, YURU_TEST_DETAIL_1) (__VA_ARGS__)
+#define YURUSANAE_TEST_SELECTER(_1, _2, COUNT, ...) COUNT
+#define YURU_TEST(...) YURUSANAE_TEST_SELECTER(__VA_ARGS__, YURU_TEST_DETAIL_2, YURU_TEST_DETAIL_1) (__VA_ARGS__)
 
 #define YURU_BENCH_DETAIL_1(x) \
     struct x : public yurusanae::benchmark_base<> { \
@@ -156,6 +156,7 @@ struct benchmark_base {
     }; \
     void x::exec_impl() const
 
-#define YURU_BENCH(...) YURUSANAE_SELECTER(__VA_ARGS__, YUTU_BENCH_DETAIL_3, YURU_BENCH_DETAIL_2, YURU_BENCH_DETAIL_1) (__VA_ARGS__)
+#define YURUSANAE_BENCH_SELECTER(_1, _2, _3, COUNT, ...) COUNT
+#define YURU_BENCH(...) YURUSANAE_BENCH_SELECTER(__VA_ARGS__, YUTU_BENCH_DETAIL_3, YURU_BENCH_DETAIL_2, YURU_BENCH_DETAIL_1) (__VA_ARGS__)
 
 #endif
