@@ -31,6 +31,16 @@ inline std::string format(Head const& head, Args const& ... args) {
     return ss.str() + format(args ...);
 }
 
+struct benchmark_bar {
+    benchmark_bar() {
+        std::cerr << "     bench name     |    average(ms)     |    minimum(ms)     |    maximum(ms)     " << std::endl;
+        std::cerr << "-----------------------------------------------------------------------------------" << std::endl;
+    }
+    static void make() {
+        static auto dummy = benchmark_bar{};
+    }
+};
+
 }
 
 struct test_fail : public std::exception {
@@ -75,10 +85,10 @@ struct benchmark_base {
     virtual std::string name() const = 0;
     virtual void exec_impl() const = 0;
     void exec() const {
+        detail::benchmark_bar::make();
         auto buf = std::cout.rdbuf();
         std::stringstream dummy;
         std::cout.rdbuf(dummy.rdbuf());
-        std::cerr << "\033[32m" << std::flush;
         std::array<double, BIG_N> times{};
         for (int big_i=0; big_i<BIG_N; big_i++) {
             auto start = std::chrono::system_clock::now();
@@ -102,8 +112,7 @@ struct benchmark_base {
                 max = it;
         }
         std::cerr << "\r\033[K";
-        std::cerr << "[benchmark for " << name() << "] " << std::flush;
-        std::cout << "average: " << sum / BIG_N << "ms, min: " << *min << "ms, max: " << *max << "ms\033[39m" << std::endl;
+        std::printf("%20s|%20f|%20f|%20f\n", name().c_str(), sum / BIG_N, *min, *max);
     }
     virtual ~benchmark_base() = default;
 };
