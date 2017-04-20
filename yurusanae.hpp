@@ -57,31 +57,15 @@ struct test_base {
         ss << "assertion: " << lhs << " == " << rhs << std::endl;
         throw test_fail{ss.str()};
     };
-    template<typename T>
-    void assert_lt(T const& lhs, T const& rhs) {
+
+    void assert(bool is_ok, std::string const& msg = "") {
         assert_count++;
-        if (lhs < rhs)
+        if (is_ok)
             return;
         std::stringstream ss;
         ss << "\033[31mtest[" << name() <<  "] fail.. \033[39m ";
-        ss << "assertion: " << lhs << " < " << rhs << std::endl;
+        ss << "assertion: " << msg << std::endl;
         throw test_fail{ss.str()};
-    }
-
-    template<typename F, typename ... Args>
-    void assert_if(F&& f, Args&& ... args) {
-        assert_count++;
-        if (f(std::forward<Args>(args) ...))
-            return;
-        std::stringstream ss;
-        ss << "\033[31mtest[" << name() <<  "] fail.. \033[39m ";
-        ss << "assertion: f(" << detail::format(args ...) << ")" << std::endl;
-        throw test_fail{ss.str()};
-    }
-
-    void debug(bool cond, std::string const& msg, std::ostream& os = std::cerr) const {
-        if (!cond)
-            os << "\033[32m[debug in " << name() <<  "]\033[39m " << msg << std::endl;
     }
 };
 

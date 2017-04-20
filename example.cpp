@@ -18,27 +18,22 @@ int fib(int n) {
 
 //
 //  default test
-//     you can use assert_eq, assert_lt, assert_if, and debug
+//     you can use assert_eq and assert
 //
 YURU_TEST(fib_test) {
     assert_eq(fib(1), 1);
     assert_eq(fib(2), 1);
     assert_eq(fib(3), 2);
 
-    assert_lt(fib(5), fib(6));
+    assert(fib(5) < fib(6), "fib(5) is less than fib(6)");
 
-    assert_if([](int n3, int n1, int n2) {
-            return n3 == n1 + n2;
-            }, fib(6), fib(4), fib(5));
-
-    debug(fib(4) < 12, "fib(4) is less than 12"); // to std::cerr
-    debug(fib(5) > 42, "fib(5) is greater than 42", std::cout);
+    assert(fib(7) + fib(8) == fib(9), "fib(7) + fib(8) = fib(9)");
 }
 
 
 //
 //  customed test
-//     you can use assert_eq, assert_lt, assert_if, and debug
+//     you can use assert_eq, assert and neko
 //
 struct custom_test : public yurusanae::test_base {
     void neko() const {
@@ -51,17 +46,11 @@ YURU_TEST(customed_fib_test, custom_test) {
     assert_eq(fib(2), 1);
     assert_eq(fib(3), 2);
 
-    assert_lt(fib(5), fib(6));
+    assert(fib(5) < fib(6), "fib(5) is less than fib(6)");
 
-    assert_if([](int n3, int n1, int n2) {
-            return n3 == n1 + n2;
-            }, fib(6), fib(4), fib(5));
-
-    debug(fib(4) < 12, "fib(4) is less than 12"); // to std::cerr
-    debug(fib(5) > 42, "fib(5) is greater than 42", std::cout);
+    assert(fib(7) + fib(8) == fib(9), "fib(7) + fib(8) = fib(9)");
     neko();  // customed command!!
 }
-
 
 //
 // How to call test
