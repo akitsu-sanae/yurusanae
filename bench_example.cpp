@@ -31,13 +31,18 @@ YURU_BENCH(fib1_bench) {
     std::cout << fib1(36) << std::endl;
 }
 
-YURU_BENCH(fib2_bench, 100000) {
+YURU_BENCH(fib2_small_bench) {
+    std::cout << fib2(36) << std::endl;
+}
+
+YURU_BENCH(fib2_big_bench, 1000) {
     std::cout << fib2(36) << std::endl;
 }
 
 int main() {
     fib1_bench{}.exec();
-    fib2_bench{}.exec();
+    fib2_small_bench{}.exec();
+    fib2_big_bench{}.exec();
 }
 
 

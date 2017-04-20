@@ -99,23 +99,29 @@ YURU_BENCH(fib1_bench) {
     std::cout << fib1(36) << std::endl;
 }
 
-YURU_BENCH(fib2_bench, 100000) {
+YURU_BENCH(fib2_small_bench) {
+    std::cout << fib2(36) << std::endl;
+}
+
+YURU_BENCH(fib2_big_bench, 1000) {
     std::cout << fib2(36) << std::endl;
 }
 ```
-`fib2_bench`'s second argument is how many times run the code. default is 100.  
+`fib2_big_bench`'s second argument is how many times run the code. default is 100.  
 
 And, run the benchmark:
 ```cpp
 int main() {
     fib1_bench{}.exec();
-    fib2_bench{}.exec();
+    fib2_small_bench{}.exec();
+    fib2_big_bench{}.exec();
 }
 ```
 output:
 ```
-[benchmark for fib1_bench: 118ms]
-[benchmark for fib2_bench: 0ms]
+[benchmark for fib1_bench] average: 711.1ms, min: 691ms, max: 783ms
+[benchmark for fib2_small_bench] average: 0ms, min: 0ms, max: 0ms
+[benchmark for fib2_big_bench] average: 90.9ms, min: 57ms, max: 117ms
 ```
 
 # Copyright

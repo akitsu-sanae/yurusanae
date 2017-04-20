@@ -14,6 +14,7 @@
 #include <iostream>
 #include <sstream>
 #include <chrono>
+#include <array>
 
 namespace yurusanae {
 
@@ -69,7 +70,7 @@ struct test_base {
     }
 };
 
-template<size_t N = 100, typename T = std::chrono::milliseconds>
+template<size_t SMALL_N, size_t BIG_N>
 struct benchmark_base {
     virtual std::string name() const = 0;
     virtual void exec_impl() const = 0;
@@ -78,18 +79,31 @@ struct benchmark_base {
         std::stringstream dummy;
         std::cout.rdbuf(dummy.rdbuf());
         std::cerr << "\033[32m" << std::flush;
-        auto start = std::chrono::system_clock::now();
-        for (int i=0; i<N; i++) {
-            std::cerr << "\r\033[K";
-            std::cerr << "[benchmark for " << name() << "] progress: " << 100.0 * (double)i/N << "%" << std::flush;
-            exec_impl();
+        std::array<double, BIG_N> times{};
+        for (int big_i=0; big_i<BIG_N; big_i++) {
+            auto start = std::chrono::system_clock::now();
+            for (int small_i=0; small_i<SMALL_N; small_i++) {
+                std::cerr << "\r\033[K";
+                std::cerr << "[benchmark for " << name() << "] progress: " << 100.0 * (double)(big_i*SMALL_N + small_i)/(BIG_N * SMALL_N) << "%" << std::flush;
+                exec_impl();
+            }
+            auto end = std::chrono::system_clock::now();
+            times[big_i] = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
         }
-        auto end = std::chrono::system_clock::now();
         std::cout.rdbuf(buf);
-        auto diff = std::chrono::duration_cast<T>(end - start).count() / N;
+        double sum = 0.0;
+        auto min = times.begin();
+        auto max = times.begin();
+        for (auto it=times.begin(); it!=times.end(); ++it) {
+            sum += *it;
+            if (*min > *it)
+                min = it;
+            if (*max < *it)
+                max = it;
+        }
         std::cerr << "\r\033[K";
-        std::cerr << "[benchmark for " << name() <<  ": " << diff << "ms]";
-        std::cerr << "\033[39m" << std::endl;
+        std::cerr << "[benchmark for " << name() << "] " << std::flush;
+        std::cout << "average: " << sum / BIG_N << "ms, min: " << *min << "ms, max: " << *max << "ms\033[39m" << std::endl;
     }
     virtual ~benchmark_base() = default;
 };
@@ -124,7 +138,7 @@ struct benchmark_base {
 #define YURU_TEST(...) YURUSANAE_TEST_SELECTER(__VA_ARGS__, YURU_TEST_DETAIL_2, YURU_TEST_DETAIL_1) (__VA_ARGS__)
 
 #define YURU_BENCH_DETAIL_1(x) \
-    struct x : public yurusanae::benchmark_base<> { \
+    struct x : public yurusanae::benchmark_base<10, 10> { \
         std::string name() const override { \
             return #x; \
         } \
@@ -133,7 +147,7 @@ struct benchmark_base {
     void x::exec_impl() const
 
 #define YURU_BENCH_DETAIL_2(x, N) \
-    struct x : public yurusanae::benchmark_base<N> { \
+    struct x : public yurusanae::benchmark_base<N, 10> { \
         std::string name() const override { \
             return #x; \
         } \
@@ -141,8 +155,8 @@ struct benchmark_base {
     }; \
     void x::exec_impl() const
 
-#define YURU_BENCH_DETAIL_3(x, N, T) \
-    struct x : public yurusanae::benchmark_base<N, T> { \
+#define YURU_BENCH_DETAIL_3(x, SMALL_N, BIG_N) \
+    struct x : public yurusanae::benchmark_base<SMALL_N, BIG_N> { \
         std::string name() const override { \
             return #x; \
         } \
@@ -151,6 +165,6 @@ struct benchmark_base {
     void x::exec_impl() const
 
 #define YURUSANAE_BENCH_SELECTER(_1, _2, _3, COUNT, ...) COUNT
-#define YURU_BENCH(...) YURUSANAE_BENCH_SELECTER(__VA_ARGS__, YUTU_BENCH_DETAIL_3, YURU_BENCH_DETAIL_2, YURU_BENCH_DETAIL_1) (__VA_ARGS__)
+#define YURU_BENCH(...) YURUSANAE_BENCH_SELECTER(__VA_ARGS__, YURU_BENCH_DETAIL_3, YURU_BENCH_DETAIL_2, YURU_BENCH_DETAIL_1) (__VA_ARGS__)
 
 #endif
