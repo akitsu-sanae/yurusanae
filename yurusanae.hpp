@@ -58,8 +58,8 @@ struct test_base {
     virtual std::string name() const = 0;
     int assert_count = 0;
 
-    template<typename T>
-    void assert_eq(T const& lhs, T const& rhs) {
+    template<typename T1, typename T2>
+    void assert_eq(T1 const& lhs, T2 const& rhs) {
         assert_count++;
         if (lhs == rhs)
             return;
